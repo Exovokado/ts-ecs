@@ -1,7 +1,6 @@
 import ECS from "../src/ecs/ECS";
 import { Drawer, Mover, Position, PositionCollector, Style, ThingFactory } from "./material";
 
-// ECS instaciation.
 const ecs = new ECS(
     // Pass in your favorite logger.
     {
@@ -16,11 +15,10 @@ ecs.addSystem(new Mover());
 ecs.addSystem(new Drawer());
 ecs.addSystem(new PositionCollector());
 
-describe('testing index file', () => {
-    test('empty string should result in zero', () => {
+describe('testing basics', () => {
+    test('CRUD', () => {
         // Create.
         let entity = ecs.addEntity();
-
         // Read.
         ecs.addComponent(entity, new Position({ x: 3, y: 2 }));
         const position = ecs.getComponent(entity, Position);
@@ -33,7 +31,7 @@ describe('testing index file', () => {
         expect(position.coords()).toBe("3/2");
 
         // Update.
-        ecs.update(); // Set in your game loop.
+        ecs.update();
         expect(position.coords()).toBe("4/3");
 
         ecs.getSystem(Mover).suspend(1);
@@ -55,9 +53,10 @@ describe('testing index file', () => {
 
         ecs.update();
         expect(ecs.entityExist(entity)).toBe(false);
-
+    });
+    test('save / load / print', () => {
         // Export Save.
-        entity = ecs.addEntity();
+        const entity = ecs.addEntity();
         ecs.addComponent(entity, new Position({ x: 3, y: 2 }));
         expect(JSON.stringify(ecs.print())).toBe('[[\"2\",[{\"isSync\":false,\"map\":{}}]],[\"3\",[{\"isSync\":false,\"x\":3,\"y\":2}]]]')
 
@@ -70,7 +69,8 @@ describe('testing index file', () => {
 
         ecs.load(save)
         expect(JSON.stringify(ecs.print())).toBe('[[\"2\",[{\"isSync\":false,\"map\":{}}]],[\"4\",[{\"isSync\":false,\"x\":3,\"y\":2}]]]')
-
+    });
+    test('factory', () => {
         // Create via Factory.
         ecs.addFactory(new ThingFactory());
 
