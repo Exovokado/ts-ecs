@@ -29,10 +29,22 @@ export class ClientECS extends ECS {
         const components = new ComponentContainer();
         for (const row of componentContainer.syncMap) {
             components.map.set(row[0], row[1]);
+            row[1].onChange = (changes) => {
+                for (const change of changes) {
+                    row[1].changed(change.field, change.value);
+                }
+                row[1].update();
+            }
         }
 
         componentContainer.syncMap.onAdd = (component, key) => {
             components.map.set(key, component);
+            component.onChange = (changes) => {
+                for (const change of changes) {
+                    component.changed(change.field, change.value);
+                }
+                component.update();
+            }
         };
         componentContainer.syncMap.onRemove = (component, key) => {
             components.map.delete(key);
