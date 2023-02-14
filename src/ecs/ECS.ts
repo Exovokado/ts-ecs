@@ -1,7 +1,7 @@
 import { Entities, Entity } from "./Entity";
 import { System, SystemClass } from "./System";
 import { Factory, FactoryClass } from "./Factory";
-import { Component, ComponentClass } from "./Component";
+import { Component, ComponentClass, Deleted } from "./Component";
 import { ComponentContainer } from "./Containers";
 
 
@@ -29,7 +29,7 @@ export default class ECS {
     protected nextEntityID = 1
     private readonly emptySytemAllowed = true;
     private readonly debug: boolean;
-    private logger: LogCallbacks;
+    public logger: LogCallbacks;
 
 
     /**
@@ -38,7 +38,11 @@ export default class ECS {
      * @param save game save data.
      * @param debug boolean.
      */
-    constructor(log: LogCallbacks, debug = false) {
+    constructor(debug: boolean = false, log: LogCallbacks = {
+        warn: (msg) => { console.log(msg) },
+        debug: (msg) => { console.log(msg) },
+        error: (msg) => { console.log(msg) }
+    }) {
         this.debug = debug;
         this.logger = log;
     }
@@ -105,6 +109,7 @@ export default class ECS {
      * @param entity entity id.
      */
     public removeEntity(entity: Entity) {
+        this.addComponent(entity, new Deleted());
         this.entitiesToDestroy.add(entity);
     }
 
@@ -113,6 +118,7 @@ export default class ECS {
      * @param entity entity id.
      */
     protected destroyEntity(entity: Entity) {
+        this.removeComponent(entity, Deleted);
         for (const system of this.systems) {
             system[1].removeEntity(entity)
         }
@@ -133,12 +139,12 @@ export default class ECS {
      */
     public addComponent(entity: Entity, component: Component): Component {
         const components = this.getComponents(entity);
-        components.map.set(component.constructor.name, new Proxy(component, {
-            set: (target: Component, p: string | symbol, newValue: any, receiver: any): boolean => {
-                if (target[p as keyof typeof target] !== newValue) {
+        components.map.set(component.constructor.name, new Proxy<Component>(component, {
+            set: (target: Component, p: keyof typeof target, newValue: any, receiver: any): boolean => {
+                target[p] = newValue;
+                if (target[p] !== newValue && typeof target[p] !== "function") {
                     target.changed(p, newValue);
                 }
-                target[p as keyof typeof target] = newValue;
                 return true;
             }
         }));
@@ -151,7 +157,7 @@ export default class ECS {
      * @param entity Entity id. 
      * @param component Component instance.
      */
-    public removeComponent(entity: Entity, component: Function): void {
+    public removeComponent(entity: Entity, component: ComponentClass<Component>): void {
         const components = this.getComponents(entity);
         components.map.delete(component.name);
         this.checkEntity(entity);
@@ -168,20 +174,6 @@ export default class ECS {
             throw new Error("Entity :" + entity.toString() + " Not found");
         }
         else return ComponentContainer;
-    }
-
-    public updateComponent<T extends Component>(
-        entity: Entity,
-        componentClass: ComponentClass<T>,
-        values: Partial<T>
-    ): void {
-        const components = this.getComponents(entity);
-        if (!this.hasComponent(entity, componentClass)) throw new Error("Component :" + componentClass + " Not found");
-        let component = components.map.get(componentClass.name);
-        for (const key of Object.keys(values)) {
-            component[key as keyof typeof component] = values[key as keyof typeof component] as any;
-        }
-        component.update();
     }
 
     /**
@@ -202,7 +194,7 @@ export default class ECS {
 
     public getComponentIfExist<T extends Component>(
         entity: Entity,
-        componentClass: ComponentClass<T>
+        componentClass: ComponentClass<Component>
     ): T | null {
         const components = this.getComponents(entity);
         if (!this.hasComponent(entity, componentClass)) return null;
@@ -215,7 +207,7 @@ export default class ECS {
      * @param component Component instance.
      * @returns true or false.
      */
-    public hasComponent(entity: Entity, component: Function): boolean {
+    public hasComponent(entity: Entity, component: ComponentClass<Component>): boolean {
         return this.getComponents(entity).map.get(component.name) ? true : false;
     }
 
@@ -225,7 +217,7 @@ export default class ECS {
      * @param components 
      * @returns 
      */
-    public hasAnyComponents(entity: Entity, components: Iterable<Function>): boolean {
+    public hasAnyComponents(entity: Entity, components: Iterable<ComponentClass<Component>>): boolean {
         for (const component of components) {
             if (this.hasComponent(entity, component)) {
                 return true;
@@ -240,7 +232,7 @@ export default class ECS {
      * @param components 
      * @returns 
      */
-    public hasAllComponents(entity: Entity, components: Iterable<Function>): boolean {
+    public hasAllComponents(entity: Entity, components: Iterable<ComponentClass<Component>>): boolean {
         for (const component of components) {
             if (!this.hasComponent(entity, component)) {
                 return false;
@@ -264,7 +256,9 @@ export default class ECS {
 
         if (this.systems.has(system.constructor.name)) return false;
 
-        system.setECS(this);
+        system.ecs = this;
+        if(!this.debug) system.debug = false;
+        system.init();
 
         this.systems.set(system.constructor.name, system);
 
@@ -330,6 +324,9 @@ export default class ECS {
             }
             if(!isMap) this.destroyEntity(entity[0]);
         }
+        for (const system of this.systems) {
+            system[1].onClear();
+        }
     }
 
     public export(): string {
@@ -366,10 +363,10 @@ export default class ECS {
                 [...entity[1].map.values()]],
             );
         }
-        if(this.debug) this.logger.debug(rows)
-        return rows;
+        return JSON.stringify(rows);
     }
 }
 
 
 
+// query queries

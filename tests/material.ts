@@ -1,5 +1,4 @@
-import { Collector } from "../src/ecs/Collector";
-import { Component, ComponentClass, MapComponent } from "../src/ecs/Component";
+import { Component } from "../src/ecs/Component";
 import { Factory } from "../src/ecs/Factory";
 import { System } from "../src/ecs/System";
 
@@ -21,24 +20,10 @@ export class Position extends Component {
 }
 
 // Systems.
-export class PositionMap extends MapComponent {}
-export class PositionCollector extends Collector<PositionMap, Position> {
-    public componentsRequired: Set<Function> = new Set([Position]);
-    // Map element to hold entity reference. 
-    public mapComponent: ComponentClass<PositionMap> = PositionMap;
-    // Component from wich you want to track changes.
-    public trackedComponent: ComponentClass<Position> = Position;
-    // If true, map will be updated on "onChange" call. Else, on "update".
-    public changeOrUpdate: boolean = false;
-    // Serialize the property you want to track.
-    public print (entity: string) {
-        return this.ecs.getComponent(entity, Position).coords();
-    };
-}
-
 export class Mover extends System {
-    public componentsRequired = new Set([Position]);
+    componentsRequired = new Set([Position]);
     weight = 0;
+    debug = true;
 
     // Update loop.
     public update(delta: number | boolean): void {
@@ -67,10 +52,12 @@ export class Mover extends System {
 }
 
 export class Drawer extends System<string> {
-    public componentsRequired = new Set([Position]);
-    public componentsExcluded = new Set([Defended]);
+    componentsRequired = new Set([Position]);
+    componentsExcluded = new Set([Defended]);
     filter = true;
     weight = 1;
+    debug = true;
+
     public update(delta: number | boolean): void {
         // Update based on message. If "filter" is true, update won't run with an empty message list.
         const targets = this.getMessages();
@@ -88,6 +75,7 @@ export class Style extends Component {
         this.color = color;
     }
 }
+
 export class ThingFactory extends Factory {
     public create(args: { color: "red" | "blue" }): string {
         const entity = this.ecs.addEntity();

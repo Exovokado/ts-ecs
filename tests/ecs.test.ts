@@ -1,19 +1,10 @@
 import ECS from "../src/ecs/ECS";
-import { Drawer, Mover, Position, PositionCollector, Style, ThingFactory } from "./material";
+import { Drawer, Mover, Position, Style, ThingFactory } from "./material";
 
-const ecs = new ECS(
-    // Pass in your favorite logger.
-    {
-        warn: (msg) => { console.log(msg) },
-        debug: (msg) => { console.log(msg) },
-        error: (msg) => { console.log(msg) }
-    },
-    false
-);
-ecs.registerComponent(Position);
+const ecs = new ECS(true);
+
 ecs.addSystem(new Mover());
 ecs.addSystem(new Drawer());
-ecs.addSystem(new PositionCollector());
 
 describe('testing basics', () => {
     test('CRUD', () => {
@@ -24,10 +15,11 @@ describe('testing basics', () => {
         const position = ecs.getComponent(entity, Position);
         expect(position.coords()).toBe("3/2");
 
-        ecs.updateComponent(entity, Position, { x: 4, y: 6 });
+        position.x = 4;
+        position.y = 6;
         expect(position.coords()).toBe("4/6");
-
-        ecs.updateComponent(entity, Position, { x: 3, y: 2 });
+        position.x = 3;
+        position.y = 2;
         expect(position.coords()).toBe("3/2");
 
         // Update.
@@ -41,9 +33,6 @@ describe('testing basics', () => {
         ecs.update();
         expect(position.coords()).toBe("5/4");
 
-        // Read (custom query).
-        expect(ecs.getSystem(PositionCollector).get("5/4")?.has(entity)).toBe(true);
-
         // Delete.
         ecs.removeComponent(entity, Position);
         expect(ecs.getSystem(Mover).hasAny()).toBe(false);
@@ -55,20 +44,21 @@ describe('testing basics', () => {
         expect(ecs.entityExist(entity)).toBe(false);
     });
     test('save / load / print', () => {
+        // A registered component may be later exported / imported.
+        ecs.registerComponent(Position);
+
         // Export Save.
         const entity = ecs.addEntity();
         ecs.addComponent(entity, new Position({ x: 3, y: 2 }));
-        expect(JSON.stringify(ecs.print())).toBe('[[\"2\",[{\"isSync\":false,\"map\":{}}]],[\"3\",[{\"isSync\":false,\"x\":3,\"y\":2}]]]')
+        expect(ecs.print()).toBe('[[\"2\",[{\"isSync\":false,\"x\":3,\"y\":2}]]]')
 
         const save = ecs.export();
         expect(save).toBe('[[[\"Position\",\"{\\\"isSync\\\":false,\\\"x\\\":3,\\\"y\\\":2}\"]]]');
 
         // Load Save.
         ecs.clear()
-        expect(JSON.stringify(ecs.print())).toBe('[[\"2\",[{\"isSync\":false,\"map\":{}}]]]')
-
         ecs.load(save)
-        expect(JSON.stringify(ecs.print())).toBe('[[\"2\",[{\"isSync\":false,\"map\":{}}]],[\"4\",[{\"isSync\":false,\"x\":3,\"y\":2}]]]')
+        expect(ecs.print()).toBe('[[\"3\",[{\"isSync\":false,\"x\":3,\"y\":2}]]]')
     });
     test('factory', () => {
         // Create via Factory.

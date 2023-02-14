@@ -1,4 +1,3 @@
-import { Entity } from "./Entity";
 
 /**
  * Structure holding entities data.
@@ -12,7 +11,4 @@ export abstract class Component {
 export type ComponentClass<T extends Component> = new (...args: any[]) => T
 
 export class Locked extends Component { }
-
-export abstract class MapComponent extends Component {
-    map: Map<string, Set<Entity>> = new Map();
-}
+export class Deleted extends Component { }
