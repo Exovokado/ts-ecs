@@ -62,22 +62,8 @@ export class Mover extends System {
             const position = this.ecs.getComponent(entity, Position);
             position.x++;
             position.y++;
-            position.update();
             this.ecs.getSystem(Drawer).addMessage(entity);
         }
-    }
-
-    public setEntity(entity: string): void {
-        // State tracking example. 
-        const position = this.ecs.getComponent(entity, Position);
-        position.changed = () => {
-            if(this.isDefended(position)) this.ecs.addComponent(entity, new Defended());
-            else this.ecs.removeComponent(entity, Defended);
-        }
-    }
-
-    private isDefended (position: Position) {
-        return position.x % 2 === 0 ? true : false;
     }
 }
 ```
