@@ -13,7 +13,6 @@ Most of the data pass through simple components.
 
 - Holds entity lists based on a set of required / excluded components class.
 - Can run at each update or on message call (optionnaly providing more data) from other systems, or both.
-- Implements methods on entity adding / removal / change to allow custom mapping for further optimized queries
 
 **The Benefits**:
 
