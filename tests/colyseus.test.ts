@@ -48,16 +48,26 @@ describe("testing basic Colyseus app", () => {
         }
       }
     });
+    let position = room.ecs.getComponent("1", Position);
+    let client_position = client1_ecs.getComponent("1", Position);
+
+    let done = [0, 0];
+    position.changed = (prop, val) => {
+      done[0] = val;
+    }
+    
+    client_position.changed = (prop, val) => {
+      done[1] = val;
+    }
 
     client1.send("move", { x: -1 });
-    const [client, message] = await room.waitForMessage("move");
+    await room.waitForMessage("move");
     await room.waitForNextPatch();
 
-    let position = room.ecs.getComponent("1", Position);
     assert.strictEqual(position.x, -10);
-
-    let client_position = client1_ecs.getComponent("1", Position);
     assert.strictEqual(client_position.x, -10);
+    assert.strictEqual(done[0], -10);
+    assert.strictEqual(done[1], -10);
 
     client1.leave()
     await room.waitForNextPatch();

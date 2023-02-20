@@ -3,7 +3,7 @@
  * Structure holding entities data.
  */
 export abstract class Component {
-    changed: (prop: string | symbol, value: any) => void = () => { };
+    changed: (prop: string, value: any) => void = () => { };
     update: () => void = () => { };
     isSync: boolean = false;
 }

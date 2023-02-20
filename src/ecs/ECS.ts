@@ -67,11 +67,10 @@ export default class ECS {
      * @param name name of the factory.
      * @param factory factory object.
      */
-    public addFactory(factory: Factory) {
+    public addFactory(factory: Factory): void {
         if (this.factories.has(factory.constructor.name)) return;
         factory.ecs = this;
         this.factories.set(factory.constructor.name, factory);
-        return factory;
     }
 
     /**
@@ -108,7 +107,7 @@ export default class ECS {
      * Mark entiy for further removal, to prevent system conflicts.
      * @param entity entity id.
      */
-    public removeEntity(entity: Entity) {
+    public removeEntity(entity: Entity): void {
         this.addComponent(entity, new Deleted());
         this.entitiesToDestroy.add(entity);
     }
@@ -117,7 +116,7 @@ export default class ECS {
      * Run after update() to remove entity from ecs memory and systems list.
      * @param entity entity id.
      */
-    protected destroyEntity(entity: Entity) {
+    protected destroyEntity(entity: Entity): void {
         this.removeComponent(entity, Deleted);
         for (const system of this.systems) {
             system[1].removeEntity(entity)
@@ -139,10 +138,11 @@ export default class ECS {
      */
     public addComponent(entity: Entity, component: Component): Component {
         const components = this.getComponents(entity);
-        components.map.set(component.constructor.name, new Proxy<Component>(component, {
+        components.map.set(component.constructor.name, new Proxy(component, {
             set: (target: Component, p: keyof typeof target, newValue: any, receiver: any): boolean => {
+                const last = target[p];
                 target[p] = newValue;
-                if (target[p] !== newValue && typeof target[p] !== "function") {
+                if (last !== newValue && typeof target[p] !== "function") {
                     target.changed(p, newValue);
                 }
                 return true;
@@ -155,7 +155,6 @@ export default class ECS {
     /**
      * Remove component from ecs list.
      * @param entity Entity id. 
-     * @param component Component instance.
      */
     public removeComponent(entity: Entity, component: ComponentClass<Component>): void {
         const components = this.getComponents(entity);
@@ -246,7 +245,7 @@ export default class ECS {
      * @param system System instance.
      * @returns true if system added.
      */
-    public addSystem(system: System): Boolean {
+    public addSystem(system: System): boolean {
         if (!this.emptySytemAllowed)
             if (system.componentsRequired.size == 0) {
                 this.logger.warn("System not added: empty Components list.");
@@ -316,7 +315,7 @@ export default class ECS {
         }
     }
 
-    public clear() {
+    public clear(): void {
         for (const entity of this.entities) {
             let isMap = false;
             for (const component of entity[1].map) {
@@ -345,7 +344,7 @@ export default class ECS {
         return JSON.stringify(rows);
     }
 
-    public load (save: string) {
+    public load (save: string): void {
         for (const entityRow of JSON.parse(save)) {
             const entity = this.addEntity();
             for (const ComponentRow of entityRow) {
@@ -355,7 +354,7 @@ export default class ECS {
         }
     }
 
-    public print() {
+    public print(): string {
         const rows: [string, any[]][] = [];
         for (const entity of this.entities) {
             rows.push(
@@ -366,7 +365,3 @@ export default class ECS {
         return JSON.stringify(rows);
     }
 }
-
-
-
-// query queries

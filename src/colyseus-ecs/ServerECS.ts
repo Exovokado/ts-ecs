@@ -30,9 +30,10 @@ export default class ServerECS extends ECS {
     public addComponent(entity: Entity, component: Component): Component {
         const components = this.getComponents(entity);
         components.map.set(component.constructor.name, new Proxy(component, {
-            set: (target: Component, p: string | symbol, newValue: any, receiver: any): boolean => {
-                target[p as keyof typeof target] = newValue;
-                if (target[p as keyof typeof target] !== newValue && typeof target[p as keyof typeof target] !== "function") {
+            set: (target: Component, p: keyof typeof target, newValue: any, receiver: any): boolean => {
+                const last = target[p];
+                target[p] = newValue;
+                if (last !== newValue && typeof target[p] !== "function") {
                     target.changed(p, newValue);
                 }
                 return true;
