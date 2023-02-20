@@ -101,20 +101,20 @@ export abstract class System<T = any> {
         this.messages.push(message ? message : "true");
     };
 
-    public hasAny() {
+    public hasAny(): boolean {
         return this.entities.size ? true : false;
     }
 
-    public has(entity: Entity) {
+    public has(entity: Entity): boolean {
         return this.entities.has(entity) ? true : false;
     }
 
-    public getRand() {
+    public getRand(): Entity {
         const k = Math.floor(Math.random() * this.entities.size);
         return [...this.entities][k] as Entity;
     }
 
-    public onClear() { 
+    public onClear(): void { 
         this.getMessages();
         if(this.debug) this.ecs.logger.debug("Clearing " + this.constructor.name + " system");
     };

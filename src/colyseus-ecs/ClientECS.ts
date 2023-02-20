@@ -13,7 +13,6 @@ export class ClientECS extends ECS {
         error: (msg) => { console.log(msg) }
     }) {
         super(debug, log);
-
         state.entities.forEach((components: SyncComponentContainer, entity_id: string) => {
             this.importEntity(components, entity_id);
         });
@@ -25,10 +24,13 @@ export class ClientECS extends ECS {
         };
     }
 
+
     public importEntity(componentContainer: SyncComponentContainer, id: Entity) {
         const components = new ComponentContainer();
         for (const row of componentContainer.syncMap) {
             components.map.set(row[0], row[1]);
+            row[1].changed = () => {}
+            row[1].update = () => {}
             row[1].onChange = (changes) => {
                 for (const change of changes) {
                     row[1].changed(change.field, change.value);
@@ -39,6 +41,8 @@ export class ClientECS extends ECS {
 
         componentContainer.syncMap.onAdd = (component, key) => {
             components.map.set(key, component);
+            component.changed = () => {}
+            component.update = () => {}
             component.onChange = (changes) => {
                 for (const change of changes) {
                     component.changed(change.field, change.value);
