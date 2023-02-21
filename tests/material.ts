@@ -41,13 +41,9 @@ export class Mover extends System {
         // State tracking example. 
         const position = this.ecs.getComponent(entity, Position);
         position.changed = () => {
-            if(this.isDefended(position)) this.ecs.addComponent(entity, new Defended());
+            if(position.x === -10) this.ecs.addComponent(entity, new Defended());
             else this.ecs.removeComponent(entity, Defended);
         }
-    }
-
-    private isDefended (position: Position) {
-        return position.x % 2 === 0 ? true : false;
     }
 }
 

@@ -7,6 +7,7 @@ import { ECSRoom } from "../src/game/ECSRoom";
 import { Position, Secret } from "../src/game/Components";
 import { State } from "../src/colyseus-ecs/Containers";
 import { ClientECS } from "../src/colyseus-ecs/ClientECS";
+import { Defended, Mover } from "./material";
 
 
 describe("testing basic Colyseus app", () => {
@@ -51,23 +52,14 @@ describe("testing basic Colyseus app", () => {
     let position = room.ecs.getComponent("1", Position);
     let client_position = client1_ecs.getComponent("1", Position);
 
-    let done = [0, 0];
-    position.changed = (prop, val) => {
-      done[0] = val;
-    }
-    
-    client_position.changed = (prop, val) => {
-      done[1] = val;
-    }
-
+    client1_ecs.addSystem(new Mover());
     client1.send("move", { x: -1 });
     await room.waitForMessage("move");
     await room.waitForNextPatch();
 
     assert.strictEqual(position.x, -10);
     assert.strictEqual(client_position.x, -10);
-    assert.strictEqual(done[0], -10);
-    assert.strictEqual(done[1], -10);
+    assert.ok(client1_ecs.hasComponent("1", Defended));
 
     client1.leave()
     await room.waitForNextPatch();

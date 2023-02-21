@@ -139,7 +139,8 @@ export default class ECS {
     public addComponent(entity: Entity, component: Component): Component {
         const components = this.getComponents(entity);
         components.map.set(component.constructor.name, new Proxy(component, {
-            set: (target: Component, p: keyof typeof target, newValue: any, receiver: any): boolean => {
+            set: (target: Component, p: keyof typeof target, newValue: any): boolean => {
+                if(p === "isSync") return;
                 const last = target[p];
                 target[p] = newValue;
                 if (last !== newValue && typeof target[p] !== "function") {
