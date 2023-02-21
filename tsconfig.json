@@ -9,9 +9,12 @@
     "experimentalDecorators": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "sourceMap": true,
+    "declaration": true
   },
   "include": [
-    "./src"
+    "./src/colyseus-ecs",
+    "./src/ecs"
   ]
 }
