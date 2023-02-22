@@ -3,6 +3,7 @@ import { System, SystemClass } from "./System";
 import { Factory, FactoryClass } from "./Factory";
 import { Component, ComponentClass } from "./Component";
 import { ComponentContainer } from "./Containers";
+import { EventManager } from "./Event";
 export interface LogCallbacks {
     warn: (tolog: any) => void;
     error: (tolog: any) => void;
@@ -21,6 +22,7 @@ export default class ECS {
     private readonly emptySytemAllowed;
     private readonly debug;
     logger: LogCallbacks;
+    eventManager: EventManager;
     /**
      * You could also use a simple entity map and not extend entitycontainer.
      * @param entityContainer custom handler to list entities.

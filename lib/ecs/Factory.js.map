@@ -1,1 +1,1 @@
-{"version":3,"file":"Factory.js","sourceRoot":"","sources":["../../src/ecs/Factory.ts"],"names":[],"mappings":"AAGA;;GAEG;AACH,MAAM,OAAgB,OAAO;IAClB,GAAG,CAAM;CAMnB"}
+{"version":3,"file":"Factory.js","sourceRoot":"","sources":["../../src/ecs/Factory.ts"],"names":[],"mappings":";;;AAGA;;GAEG;AACH,MAAsB,OAAO;CAO5B;AAPD,0BAOC"}
