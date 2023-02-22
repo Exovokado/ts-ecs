@@ -28,7 +28,7 @@
   "scripts": {
     "test": "jest",
     "start": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "npm run clean && tsc && node node_modules/copyfiles/copyfiles package.json ./lib && node node_modules/copyfiles/copyfiles arena.env ./lib",
+    "build": "npm run clean && tsc",
     "clean": "node node_modules/rimraf/bin lib"
   }
 }

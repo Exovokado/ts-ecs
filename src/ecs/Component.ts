@@ -5,7 +5,7 @@
 export abstract class Component {
     changed: (prop: string, value: any) => void = () => { };
     update: () => void = () => { };
-    isSync: boolean = false;
+    readonly isSync: boolean = false;
 }
 
 export type ComponentClass<T extends Component> = new (...args: any[]) => T

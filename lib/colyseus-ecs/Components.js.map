@@ -1,0 +1,1 @@
+{"version":3,"file":"Components.js","sourceRoot":"","sources":["../../src/colyseus-ecs/Components.ts"],"names":[],"mappings":";;AAAA,6CAA0C;AAG1C,MAA8B,aAAc,SAAQ,eAAM;IAA1D;;QACI,YAAO,GAAuC,GAAG,EAAE,GAAG,CAAC,CAAC;QACxD,WAAM,GAAe,GAAG,EAAE,GAAG,CAAC,CAAC;QACtB,WAAM,GAAY,IAAI,CAAC;IACpC,CAAC;CAAA;AAJD,gCAIC"}

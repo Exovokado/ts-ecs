@@ -1,4 +1,5 @@
 import { Component } from "../src/ecs/Component";
+import { Event } from "../src/ecs/Event";
 import { Factory } from "../src/ecs/Factory";
 import { System } from "../src/ecs/System";
 
@@ -41,13 +42,9 @@ export class Mover extends System {
         // State tracking example. 
         const position = this.ecs.getComponent(entity, Position);
         position.changed = () => {
-            if(this.isDefended(position)) this.ecs.addComponent(entity, new Defended());
+            if(position.x === -10) this.ecs.addComponent(entity, new Defended());
             else this.ecs.removeComponent(entity, Defended);
         }
-    }
-
-    private isDefended (position: Position) {
-        return position.x % 2 === 0 ? true : false;
     }
 }
 
@@ -83,4 +80,22 @@ export class ThingFactory extends Factory {
         this.ecs.addComponent(entity, new Style(args.color));
         return entity;
     }
+}
+
+
+// Events.
+export class TestEvent extends Event<{color: "blue" | "red"}> {
+    name: 'Test';
+}
+
+export class TestEventSystem extends System {
+    public componentsRequired = new Set([Position]);
+
+    init() {
+        this.ecs.eventManager.get(TestEvent).listen(this, (data) => {
+            this.ecs.getFactory(ThingFactory).create({ color: data.color });
+        });
+    }
+
+    public update(delta: number | boolean): void {}
 }
