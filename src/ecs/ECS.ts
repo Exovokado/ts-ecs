@@ -3,6 +3,7 @@ import { System, SystemClass } from "./System";
 import { Factory, FactoryClass } from "./Factory";
 import { Component, ComponentClass, Deleted } from "./Component";
 import { ComponentContainer } from "./Containers";
+import { EventManager } from "./Event";
 
 
 export interface LogCallbacks {
@@ -30,6 +31,8 @@ export default class ECS {
     private readonly emptySytemAllowed = true;
     private readonly debug: boolean;
     public logger: LogCallbacks;
+
+    public eventManager = new EventManager();
 
 
     /**

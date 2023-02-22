@@ -1,5 +1,5 @@
 import ECS from "../src/ecs/ECS";
-import { Drawer, Mover, Position, Style, ThingFactory } from "./material";
+import { Drawer, Mover, Position, Style, TestEvent, TestEventSystem, ThingFactory } from "./material";
 
 const ecs = new ECS(true);
 
@@ -67,4 +67,15 @@ describe('testing basics', () => {
         const thing = ecs.getFactory(ThingFactory).create({ color: "blue" });
         expect(ecs.hasAllComponents(thing, [Position, Style])).toBe(true)
     });
+    test('events', () => {
+        ecs.eventManager.register(new TestEvent());
+        ecs.addSystem(new TestEventSystem());
+        ecs.eventManager.get(TestEvent).dispatch({
+            color: "red"
+        });
+        expect(ecs.getComponent("5", Style).color).toBe("red")
+    });
+
+
 });
+
