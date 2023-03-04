@@ -92,7 +92,7 @@ export class TestEventSystem extends System {
     public componentsRequired = new Set([Position]);
 
     init() {
-        this.ecs.eventManager.get(TestEvent).listen(this, (data) => {
+        this.listen(TestEvent, (data) => {
             this.ecs.getFactory(ThingFactory).create({ color: data.color });
         });
     }

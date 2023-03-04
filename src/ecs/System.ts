@@ -1,6 +1,7 @@
 import { Entity } from "./Entity";
 import { Component, Locked, ComponentClass } from "./Component";
 import ECS from "./ECS";
+import { Event, EventClass } from "./Event";
 
 export type SystemClass<T extends System> = new (...args: any[]) => T
 
@@ -132,4 +133,8 @@ export abstract class System<T = any> {
     };
 
     public abstract update(delta: number | boolean): void;
+
+    public listen<E extends Event>(event: EventClass<E>, callback: (data: T) => void) {
+        this.ecs.eventManager.get(event).listen(this, callback);
+    }
 }

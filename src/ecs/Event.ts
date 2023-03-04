@@ -7,7 +7,6 @@ export abstract class Event<T = any> {
     public systems: Map<string, (data: T) => void> = new Map();
 
     public listen(system: System, callback: (data: T) => void) {
-
         const name = system.constructor.name;
         if(this.systems.has(name)) throw new Error("Event : " + this.name + " is already beeing listened by " + name + ".");
         this.systems.set(name, callback);
@@ -20,7 +19,6 @@ export abstract class Event<T = any> {
     }
 
     public dispatch(data: T) {
-        console.log(this.systems)
         for (const system of this.systems) {
             system[1](data);
         }
