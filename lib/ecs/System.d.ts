@@ -1,17 +1,13 @@
-import { Entity } from "./Entity";
-import { Component, ComponentClass } from "./Component";
 import ECS from "./ECS";
-export type SystemClass<T extends System> = new (...args: any[]) => T;
+import { Event, EventClass } from "./Event";
+export type SystemClass<SystemInstance extends System> = new (...args: any[]) => SystemInstance;
 /**
  * Run game logic code.
  */
-export declare abstract class System<T = any> {
-    abstract readonly componentsRequired: Set<ComponentClass<Component>>;
-    readonly componentsExcluded: Set<ComponentClass<Component>>;
+export declare abstract class System<Message = any> {
     readonly weight: number;
     readonly filter: boolean;
     debug: boolean;
-    protected entities: Set<string>;
     private messages;
     private tmpMessages;
     private suspended;
@@ -21,25 +17,11 @@ export declare abstract class System<T = any> {
     enable(): void;
     private isSuspended;
     check(): boolean;
-    /**
-     * Register entity on system list if it checks requirements.
-     * @param entity entity id
-     */
-    registerEntity(entity: Entity): void;
-    /**
-     * Remove entity from system list.
-     * @param entity entity id
-     */
-    removeEntity(entity: Entity): void;
-    getMessages(): T[];
-    getMessage(): T;
-    addMessage(message?: T): void;
-    hasAny(): boolean;
-    has(entity: Entity): boolean;
-    getRand(): Entity;
+    getMessages(): Message[];
+    getMessage(): Message;
+    addMessage(message?: Message): void;
     onClear(): void;
     init(): void;
-    setEntity(entity: Entity): void;
-    unsetEntity(entity: Entity): void;
     abstract update(delta: number | boolean): void;
+    listen<E extends Event<any>>(event: EventClass<E>, callback: (data: E['type']) => void): void;
 }

@@ -4,6 +4,7 @@ import { Factory, FactoryClass } from "./Factory";
 import { Component, ComponentClass } from "./Component";
 import { ComponentContainer } from "./Containers";
 import { EventManager } from "./Event";
+import { Query, QueryClass } from "./Query";
 export interface LogCallbacks {
     warn: (tolog: any) => void;
     error: (tolog: any) => void;
@@ -14,7 +15,7 @@ export interface LogCallbacks {
  */
 export default class ECS {
     protected entities: Entities;
-    protected components: Map<string, ComponentClass<any>>;
+    protected components: Map<string, ComponentClass<Component>>;
     protected systems: Map<string, System<any>>;
     private factories;
     protected entitiesToDestroy: Set<string>;
@@ -23,6 +24,7 @@ export default class ECS {
     private readonly debug;
     logger: LogCallbacks;
     eventManager: EventManager;
+    queries: Map<string, Query>;
     /**
      * You could also use a simple entity map and not extend entitycontainer.
      * @param entityContainer custom handler to list entities.
@@ -30,6 +32,9 @@ export default class ECS {
      * @param debug boolean.
      */
     constructor(debug?: boolean, log?: LogCallbacks);
+    addQuery(query: Query, debug?: boolean): void;
+    getQuery<Q extends Query>(queryClass: QueryClass<Q>): Q;
+    query(query: QueryClass<Query>): IterableIterator<string>;
     /**
      * Run game logic at each game tick.
      */
