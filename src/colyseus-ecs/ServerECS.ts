@@ -19,8 +19,8 @@ export default class ServerECS extends ECS {
     }
 
     protected destroyEntity(entity: Entity) {
-        for (const system of this.systems) {
-            system[1].removeEntity(entity)
+        for (const query of this.queries) {
+            query[1].removeEntity(entity)
         }
         this.entitiesToDestroy.delete(entity);
         this.entities.delete(entity.toString());
@@ -53,6 +53,7 @@ export default class ServerECS extends ECS {
 
     public removeComponent<T extends Component>(entity: Entity, component: ComponentClass<T>): void {
         const components = this.getComponents(entity);
+        if(!components.map.get(component.name)) throw new Error("Component " + component.name + " not present in entity " + entity + ".");
         if(components.map.get(component.name).isSync) {
             if(this.state.entities.has(entity))
             this.state.entities.get(entity).syncMap.delete(component.name);

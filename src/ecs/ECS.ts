@@ -4,7 +4,7 @@ import { Factory, FactoryClass } from "./Factory";
 import { Component, ComponentClass, Deleted } from "./Component";
 import { ComponentContainer } from "./Containers";
 import { EventManager } from "./Event";
-
+import { Query, QueryClass } from "./Query";
 
 export interface LogCallbacks {
     warn: (tolog: any) => void;
@@ -18,7 +18,7 @@ export interface LogCallbacks {
 export default class ECS {
     // List of entities in a custom handler.
     protected entities: Entities = new Map();
-    protected components: Map<string, ComponentClass<any>> = new Map();
+    protected components: Map<string, ComponentClass<Component>> = new Map();
     // protected proxies: Map<string, typeof Proxy>;
     // List of systems to run.
     protected systems = new Map<string, System>();
@@ -34,6 +34,8 @@ export default class ECS {
 
     public eventManager = new EventManager();
 
+    public queries: Map<string, Query> = new Map();
+
 
     /**
      * You could also use a simple entity map and not extend entitycontainer.
@@ -48,6 +50,25 @@ export default class ECS {
     }) {
         this.debug = debug;
         this.logger = log;
+    }
+
+    public addQuery(query: Query, debug: boolean = false) {
+        query.ecs = this;
+        query.debug = debug;
+        for (const entity of this.entities) {
+            query.registerEntity(entity[0]);
+        }
+        this.queries.set(query.constructor.name, query);
+    }
+
+    public getQuery<Q extends Query>(queryClass: QueryClass<Q>): Q {
+        if (!this.queries.has(queryClass.name)) throw new Error("query " + queryClass.name + " does not exist");
+        return this.queries.get(queryClass.name) as Q;
+    }
+
+    public query(query: QueryClass<Query>) {
+        if (!this.queries.has(query.name)) throw new Error("query " + query.name + " does not exist");
+        return this.queries.get(query.name).get();
     }
 
     /**
@@ -120,9 +141,9 @@ export default class ECS {
      * @param entity entity id.
      */
     protected destroyEntity(entity: Entity): void {
-        this.removeComponent(entity, Deleted);
-        for (const system of this.systems) {
-            system[1].removeEntity(entity)
+        if (this.hasComponent(entity, Deleted)) this.removeComponent(entity, Deleted);
+        for (const query of this.queries) {
+            query[1].removeEntity(entity)
         }
         this.entitiesToDestroy.delete(entity);
         this.entities.delete(entity.toString());
@@ -143,7 +164,7 @@ export default class ECS {
         const components = this.getComponents(entity);
         components.map.set(component.constructor.name, new Proxy(component, {
             set: (target: Component, p: keyof typeof target, newValue: any): boolean => {
-                if(p === "isSync") return;
+                if (p === "isSync") return;
                 const last = target[p];
                 target[p] = newValue;
                 if (last !== newValue && typeof target[p] !== "function") {
@@ -162,6 +183,7 @@ export default class ECS {
      */
     public removeComponent(entity: Entity, component: ComponentClass<Component>): void {
         const components = this.getComponents(entity);
+        if (!components.map.get(component.name)) throw new Error("Component " + component.name + " not present in entity " + entity + ".");
         components.map.delete(component.name);
         this.checkEntity(entity);
     }
@@ -250,24 +272,14 @@ export default class ECS {
      * @returns true if system added.
      */
     public addSystem(system: System): boolean {
-        if (!this.emptySytemAllowed)
-            if (system.componentsRequired.size == 0) {
-                this.logger.warn("System not added: empty Components list.");
-                this.logger.warn(system);
-                return false;
-            }
-
         if (this.systems.has(system.constructor.name)) return false;
 
         system.ecs = this;
-        if(!this.debug) system.debug = false;
+        if (!this.debug) system.debug = false;
+
         system.init();
 
         this.systems.set(system.constructor.name, system);
-
-        for (const entity of this.entities) {
-            system.registerEntity(entity[0]);
-        }
 
         this.systems = new Map([...this.systems.entries()].sort((a, b) => a[1].weight - b[1].weight));
         return true;
@@ -314,8 +326,8 @@ export default class ECS {
      * @param entity  Entity id. 
      */
     protected checkEntity(entity: Entity) {
-        for (const system of this.systems) {
-            system[1].registerEntity(entity);
+        for (const query of this.queries) {
+            query[1].registerEntity(entity);
         }
     }
 
@@ -323,9 +335,9 @@ export default class ECS {
         for (const entity of this.entities) {
             let isMap = false;
             for (const component of entity[1].map) {
-                if(Object.keys(component[1]).includes("map")) isMap = true;
+                if (Object.keys(component[1]).includes("map")) isMap = true;
             }
-            if(!isMap) this.destroyEntity(entity[0]);
+            if (!isMap) this.destroyEntity(entity[0]);
         }
         for (const system of this.systems) {
             system[1].onClear();
@@ -337,18 +349,18 @@ export default class ECS {
         for (const entity of this.entities) {
             const row = [];
             for (const component of entity[1].map) {
-                if(this.components.has(component[0]))
-                row.push([
-                    component[0],
-                    JSON.stringify(component[1])
-                ]);
+                if (this.components.has(component[0]))
+                    row.push([
+                        component[0],
+                        JSON.stringify(component[1])
+                    ]);
             }
-            if(row.length) rows.push(row);
+            if (row.length) rows.push(row);
         }
         return JSON.stringify(rows);
     }
 
-    public load (save: string): void {
+    public load(save: string): void {
         for (const entityRow of JSON.parse(save)) {
             const entity = this.addEntity();
             for (const ComponentRow of entityRow) {

@@ -2,25 +2,20 @@ import { Entity } from "./Entity";
 import { Component, Locked, ComponentClass } from "./Component";
 import ECS from "./ECS";
 import { Event, EventClass } from "./Event";
+import { Query, QueryClass } from "./Query";
 
-export type SystemClass<T extends System> = new (...args: any[]) => T
+export type SystemClass<SystemInstance extends System> = new (...args: any[]) => SystemInstance
 
 /**
  * Run game logic code.
  */
-export abstract class System<T = any> {
-    // Define here the components used to track entities.
-    public readonly abstract componentsRequired: Set<ComponentClass<Component>>;
-    public readonly componentsExcluded: Set<ComponentClass<Component>> = new Set([Locked]);
+export abstract class System<Message = any> {
     // Used to prioritize system execution.
     public readonly weight: number = 0;
     // If Yes, system will need at least one message to run in next update loop.
     public readonly filter: boolean = false;
     // If system is a debug systyem.
     public debug: boolean = false;
-
-    // List of entities implementing required components.
-    protected entities = new Set<Entity>();
 
     // Message list.
     private messages: Array<any> = new Array();
@@ -62,58 +57,18 @@ export abstract class System<T = any> {
         return true;
     }
 
-    /**
-     * Register entity on system list if it checks requirements.
-     * @param entity entity id
-     */
-    public registerEntity(entity: Entity): void {
-        if (this.ecs.hasAllComponents(entity, this.componentsRequired) && !this.ecs.hasAnyComponents(entity, this.componentsExcluded)) {
-            if (!this.entities.has(entity)) {
-                this.entities.add(entity);
-                this.setEntity(entity);
-            }
-        }
-        else {
-            this.removeEntity(entity);
-        }
-    }
-
-    /**
-     * Remove entity from system list.
-     * @param entity entity id
-     */
-    public removeEntity(entity: Entity): void {
-        if (this.entities.has(entity)) {
-            this.unsetEntity(entity);
-            this.entities.delete(entity);
-        }
-    }
-
-    public getMessages(): T[] {
+    public getMessages(): Message[] {
         return this.tmpMessages;
     }
 
-    public getMessage(): T {
+    public getMessage(): Message {
         return this.tmpMessages.pop();
     }
 
-    public addMessage(message: T = null): void {
+    public addMessage(message: Message = null): void {
         if(this.debug) this.ecs.logger.debug(message)
         this.messages.push(message ? message : "true");
     };
-
-    public hasAny(): boolean {
-        return this.entities.size ? true : false;
-    }
-
-    public has(entity: Entity): boolean {
-        return this.entities.has(entity) ? true : false;
-    }
-
-    public getRand(): Entity {
-        const k = Math.floor(Math.random() * this.entities.size);
-        return [...this.entities][k] as Entity;
-    }
 
     public onClear(): void { 
         this.getMessages();
@@ -122,19 +77,12 @@ export abstract class System<T = any> {
 
     public init(): void {
         if(this.debug) this.ecs.logger.debug("Adding new " + this.constructor.name + " system");
-     }
-
-    public setEntity(entity: Entity): void { 
-        if(this.debug) this.ecs.logger.debug("Adding " + entity + " to " + this.constructor.name);
-    };
-
-    public unsetEntity(entity: Entity): void { 
-        if(this.debug) this.ecs.logger.debug("Removing " + entity + " from " + this.constructor.name);
-    };
+    }
 
     public abstract update(delta: number | boolean): void;
 
-    public listen<E extends Event>(event: EventClass<E>, callback: (data: T) => void) {
+    public listen<E extends Event<any>>(event: EventClass<E>, callback: (data: E['type']) => void) {
         this.ecs.eventManager.get(event).listen(this, callback);
     }
+    
 }

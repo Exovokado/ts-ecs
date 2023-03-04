@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "outDir": "lib",
-    "target": "es6",
+    "target": "es2016",
     "module": "commonjs",
+    "lib": ["es6"],
     "strict": true,
     "strictNullChecks": false,
     "esModuleInterop": true,
@@ -11,7 +12,10 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "sourceMap": true,
-    "declaration": true
+    "declaration": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "noImplicitAny": false,
   },
   "include": [
     "./src/colyseus-ecs",

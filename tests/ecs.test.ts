@@ -1,7 +1,9 @@
 import ECS from "../src/ecs/ECS";
-import { Drawer, Mover, Position, Style, TestEvent, TestEventSystem, ThingFactory } from "./material";
+import { Drawer, DrawerQuery, Mover, Position, PositionQuery, Style, TestEvent, TestEventSystem, ThingFactory } from "./material";
 
 const ecs = new ECS(true);
+ecs.addQuery(new PositionQuery());
+ecs.addQuery(new DrawerQuery());
 
 ecs.addSystem(new Mover());
 ecs.addSystem(new Drawer());
@@ -35,7 +37,7 @@ describe('testing basics', () => {
 
         // Delete.
         ecs.removeComponent(entity, Position);
-        expect(ecs.getSystem(Mover).hasAny()).toBe(false);
+        expect(ecs.getQuery(PositionQuery).hasAny()).toBe(false);
 
         ecs.removeEntity(entity);
         expect(ecs.entityExist(entity)).toBe(true);
@@ -75,7 +77,4 @@ describe('testing basics', () => {
         });
         expect(ecs.getComponent("5", Style).color).toBe("red")
     });
-
-
 });
-
