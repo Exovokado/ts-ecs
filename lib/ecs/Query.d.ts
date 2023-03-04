@@ -16,4 +16,5 @@ export declare abstract class Query {
     has(entity: Entity): boolean;
     onAdd(entity: Entity): void;
     onRemove(entity: Entity): void;
+    onClear(): void;
 }

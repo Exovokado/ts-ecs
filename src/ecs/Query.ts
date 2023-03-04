@@ -52,4 +52,8 @@ export abstract class Query {
     public onRemove(entity: Entity) {
         if(this.debug) this.ecs.logger.debug('Removing entity ' + entity + ' from ' + this.constructor.name);
     }
+
+    public onClear() {
+        if(this.debug) this.ecs.logger.debug('Clearing ' + this.constructor.name);
+    }
 }

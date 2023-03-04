@@ -342,6 +342,9 @@ export default class ECS {
         for (const system of this.systems) {
             system[1].onClear();
         }
+        for (const query of this.queries) {
+            query[1].onClear();
+        }
     }
 
     public export(): string {
