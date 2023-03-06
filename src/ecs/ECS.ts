@@ -55,6 +55,7 @@ export default class ECS {
     public addQuery(query: Query, debug: boolean = false) {
         query.ecs = this;
         query.debug = debug;
+        query.init();
         for (const entity of this.entities) {
             query.registerEntity(entity[0]);
         }

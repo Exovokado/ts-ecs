@@ -10,6 +10,7 @@ export declare abstract class Query {
     ecs: ECS;
     removeEntity(entity: Entity): void;
     registerEntity(entity: Entity): void;
+    init(): void;
     get(): IterableIterator<string>;
     hasAny(): boolean;
     getRand(): Entity;

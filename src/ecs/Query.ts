@@ -28,6 +28,10 @@ export abstract class Query {
         }
     }
 
+    public init(): void {
+        if(this.debug) this.ecs.logger.debug("Adding new " + this.constructor.name + " system");
+    }
+
     public get() {
         return this.entities.values();
     }
