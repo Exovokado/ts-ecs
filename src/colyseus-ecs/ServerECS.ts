@@ -1,10 +1,8 @@
-import { Component, ComponentClass } from "src/ecs/Component";
+import { Component, ComponentClass } from "../ecs/Component";
 import ECS, { LogCallbacks } from "../ecs/ECS";
 import { Entity } from "../ecs/Entity";
 import { State, SyncComponentContainer } from "./Containers";
 import SyncComponent from "./Components";
-
-
 
 export default class ServerECS extends ECS {
     protected state: State;
@@ -20,6 +18,7 @@ export default class ServerECS extends ECS {
 
     protected destroyEntity(entity: Entity) {
         for (const query of this.queries) {
+            query[1].onRemove(entity)
             query[1].removeEntity(entity)
         }
         this.entitiesToDestroy.delete(entity);

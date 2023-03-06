@@ -1,8 +1,5 @@
-import { Entity } from "./Entity";
-import { Component, Locked, ComponentClass } from "./Component";
 import ECS from "./ECS";
 import { Event, EventClass } from "./Event";
-import { Query, QueryClass } from "./Query";
 
 export type SystemClass<SystemInstance extends System> = new (...args: any[]) => SystemInstance
 

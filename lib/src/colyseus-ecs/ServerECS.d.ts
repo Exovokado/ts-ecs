@@ -1,4 +1,4 @@
-import { Component, ComponentClass } from "src/ecs/Component";
+import { Component, ComponentClass } from "../ecs/Component";
 import ECS, { LogCallbacks } from "../ecs/ECS";
 import { Entity } from "../ecs/Entity";
 import { State } from "./Containers";

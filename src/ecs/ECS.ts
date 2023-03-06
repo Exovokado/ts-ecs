@@ -144,6 +144,7 @@ export default class ECS {
     protected destroyEntity(entity: Entity): void {
         if (this.hasComponent(entity, Deleted)) this.removeComponent(entity, Deleted);
         for (const query of this.queries) {
+            query[1].onRemove(entity)
             query[1].removeEntity(entity)
         }
         this.entitiesToDestroy.delete(entity);
