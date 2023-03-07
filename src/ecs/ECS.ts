@@ -349,18 +349,20 @@ export default class ECS {
         }
     }
 
-    public export(): string {
-        const rows = [];
+    public print(): string {
+        const rows: { entity: Entity, components: { name: string, data: any }[] }[] = [];
         for (const entity of this.entities) {
-            const row = [];
-            for (const component of entity[1].map) {
-                if (this.components.has(component[0]))
-                    row.push([
-                        component[0],
-                        JSON.stringify(component[1])
-                    ]);
+            let components = [];
+            for (const cr of entity[1].map) {
+                components.push({
+                    name: cr[0],
+                    data: JSON.parse(JSON.stringify(cr[1])),
+                });
             }
-            if (row.length) rows.push(row);
+            rows.push({
+                entity: entity[0],
+                components: components
+            });
         }
         return JSON.stringify(rows);
     }
@@ -368,21 +370,10 @@ export default class ECS {
     public load(save: string): void {
         for (const entityRow of JSON.parse(save)) {
             const entity = this.addEntity();
-            for (const ComponentRow of entityRow) {
-                const componentClass = this.components.get(ComponentRow[0]);
-                this.addComponent(entity, new componentClass(JSON.parse(ComponentRow[1])))
+            for (const ComponentRow of entityRow.components) {
+                const componentClass = this.components.get(ComponentRow.name);
+                this.addComponent(entity, new componentClass(ComponentRow.data))
             }
         }
-    }
-
-    public print(): string {
-        const rows: [string, any[]][] = [];
-        for (const entity of this.entities) {
-            rows.push(
-                [entity[0],
-                [...entity[1].map.values()]],
-            );
-        }
-        return JSON.stringify(rows);
     }
 }

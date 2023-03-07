@@ -19,5 +19,11 @@
   },
   "include": [
     "./src"
+  ],
+  "exclude": [
+    "./tests",
+    "./src/game",
+    "./src/index.ts",
+    "./src/arena.config.ts"
   ]
 }

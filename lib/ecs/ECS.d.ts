@@ -144,7 +144,6 @@ export default class ECS {
      */
     protected checkEntity(entity: Entity): void;
     clear(): void;
-    export(): string;
-    load(save: string): void;
     print(): string;
+    load(save: string): void;
 }

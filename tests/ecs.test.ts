@@ -52,15 +52,13 @@ describe('testing basics', () => {
         // Export Save.
         const entity = ecs.addEntity();
         ecs.addComponent(entity, new Position({ x: 3, y: 2 }));
-        expect(ecs.print()).toBe('[[\"2\",[{\"isSync\":false,\"x\":3,\"y\":2}]]]')
-
-        const save = ecs.export();
-        expect(save).toBe('[[[\"Position\",\"{\\\"isSync\\\":false,\\\"x\\\":3,\\\"y\\\":2}\"]]]');
+        const save = ecs.print();
+        expect(JSON.parse(save)).toStrictEqual([{"components": [{"data": {"isSync": false, "x": 3, "y": 2}, "name": "Position"}], "entity": "2"}])
 
         // Load Save.
         ecs.clear()
         ecs.load(save)
-        expect(ecs.print()).toBe('[[\"3\",[{\"isSync\":false,\"x\":3,\"y\":2}]]]')
+        expect(JSON.parse(ecs.print())).toStrictEqual([{"components": [{"data": {"isSync": false, "x": 3, "y": 2}, "name": "Position"}], "entity": "3"}])
     });
     test('factory', () => {
         // Create via Factory.
