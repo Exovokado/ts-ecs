@@ -34,7 +34,7 @@ export class EventManager {
     }
 
     public get<T extends Event>(event: EventClass<T>): T {
-        if(!this.events.has(event.name)) throw new Error("Event : " + event.name + " is not registered.");
+        if(!this.events.has(event.name)) this.events.set(event.name, new event());
         return this.events.get(event.name) as T;
     }
 }

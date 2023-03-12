@@ -27,8 +27,11 @@ export class ClientECS extends ECS {
 
     public importEntity(componentContainer: SyncComponentContainer, id: Entity) {
         const components = new ComponentContainer();
+        let done = [];
+
         for (const row of componentContainer.syncMap) {
             components.map.set(row[0], row[1]);
+            done.push(row[1].constructor.name)
             row[1].changed = () => {}
             row[1].update = () => {}
             row[1].onChange = (changes) => {
@@ -40,6 +43,7 @@ export class ClientECS extends ECS {
         }
 
         componentContainer.syncMap.onAdd = (component, key) => {
+            if(done.includes(component.constructor.name)) return;
             components.map.set(key, component);
             component.changed = () => {}
             component.update = () => {}
