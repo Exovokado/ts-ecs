@@ -6,17 +6,23 @@ export abstract class Event<T = any> {
     public systems: Map<string, (data: T) => void> = new Map();
     public readonly type: T;
 
-    public listen(system: System, callback: (data: T) => void) {
-        const name = system.constructor.name;
+    public listen(systemOrIndex: System | string, callback: (data: T) => void) {
+        const name = typeof systemOrIndex === "string" ? systemOrIndex : systemOrIndex.constructor.name;
         if(this.systems.has(name)) throw new Error("Event : " + this.constructor.name + " is already beeing listened by " + name + ".");
         this.systems.set(name, callback);
     }
 
-    public quit(system: System) {
-        const name = system.constructor.name;
+    public quit(systemOrIndex: System | string) {
+        const name = typeof systemOrIndex === "string" ? systemOrIndex : systemOrIndex.constructor.name;
         if(!this.systems.has(name)) throw new Error("Event : " + this.constructor.name + " is not beeing listened by " + name + ".");
         this.systems.delete(name);
     }
+
+    public isBeingListened(systemOrIndex: System | string): boolean {
+        const name = typeof systemOrIndex === "string" ? systemOrIndex : systemOrIndex.constructor.name;
+        return this.systems.has(name);
+    }
+
 
     public dispatch(data: T) {
         for (const system of this.systems) {

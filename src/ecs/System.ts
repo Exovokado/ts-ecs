@@ -40,6 +40,7 @@ export abstract class System<Message = any> {
         if (!this.suspended) return false;
         if (this.suspended > 0) {
             this.suspended--;
+            if (!this.suspended) this.enable();
             return true;
         }
         else this.enable();

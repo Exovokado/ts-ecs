@@ -1,29 +1,23 @@
 import { Deleted } from "../ecs/Component";
 import { ComponentContainer } from "../ecs/Containers";
-import ECS, { LogCallbacks } from "../ecs/ECS";
+import ECS from "../ecs/ECS";
 import { Entity } from "../ecs/Entity";
 import { State, SyncComponentContainer } from "./Containers";
 
 export class ClientECS extends ECS {
     public syncTable = new Map<Entity, Entity>();
 
-    constructor(state: State, debug: boolean = false, log: LogCallbacks = {
-        warn: (msg) => { console.log(msg) },
-        debug: (msg) => { console.log(msg) },
-        error: (msg) => { console.log(msg) }
-    }) {
-        super(debug, log);
-        state.entities.forEach((components: SyncComponentContainer, entity_id: string) => {
+    public synch(state: State): void {
+        state.entities.forEach((components, entity_id) => {
             this.importEntity(components, entity_id);
         });
-        state.entities.onAdd = (components: SyncComponentContainer, entity_id: string) => {
+        state.entities.onAdd = (components, entity_id) => {
             this.importEntity(components, entity_id);
         };
-        state.entities.onRemove = (components: SyncComponentContainer, entity_id: string) => {
+        state.entities.onRemove = (components, entity_id) => {
             this.removeImportedEntity(entity_id);
         };
     }
-
 
     public importEntity(componentContainer: SyncComponentContainer, id: Entity) {
         const components = new ComponentContainer();
@@ -70,7 +64,7 @@ export class ClientECS extends ECS {
         const id = this.syncTable.get(entity);
         this.addComponent(id, new Deleted());
         this.entitiesToDestroy.add(id);
-        this.syncTable.delete(id);
+        this.syncTable.delete(entity);
     }
 }
 

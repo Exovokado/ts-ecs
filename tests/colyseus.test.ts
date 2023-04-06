@@ -25,8 +25,11 @@ describe("testing basic Colyseus app", () => {
     const client1 = await colyseus.connectTo(room);
     const client2 = await colyseus.connectTo(room);
 
-    const client1_ecs = new ClientECS(client1.state);
-    const client2_ecs = new ClientECS(client2.state);
+    const client1_ecs = new ClientECS();
+    const client2_ecs = new ClientECS();
+
+    client1_ecs.synch(client1.state)
+    client2_ecs.synch(client2.state)
 
     assert.strictEqual(client1.sessionId, room.clients[0].sessionId);
 

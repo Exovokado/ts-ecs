@@ -67,6 +67,12 @@ export default class ECS {
         return this.queries.get(queryClass.name) as Q;
     }
 
+    public getQueryIfExists<Q extends Query>(queryClass: QueryClass<Q>): Q | null {
+        if(!this.queries.has(queryClass.name))
+            return null;
+        return this.queries.get(queryClass.name) as Q;
+    }
+
     public query(query: QueryClass<Query>) {
         if (!this.queries.has(query.name)) throw new Error("query " + query.name + " does not exist");
         return this.queries.get(query.name).get();
