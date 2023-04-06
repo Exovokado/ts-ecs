@@ -34,6 +34,7 @@ export default class ECS {
     constructor(debug?: boolean, log?: LogCallbacks);
     addQuery(query: Query, debug?: boolean): void;
     getQuery<Q extends Query>(queryClass: QueryClass<Q>): Q;
+    getQueryIfExists<Q extends Query>(queryClass: QueryClass<Q>): Q | null;
     query(query: QueryClass<Query>): IterableIterator<string>;
     /**
      * Run game logic at each game tick.
