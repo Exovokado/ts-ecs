@@ -138,9 +138,18 @@ export default class ECS {
      * Mark entiy for further removal, to prevent system conflicts.
      * @param entity entity id.
      */
-    public removeEntity(entity: Entity): void {
-        this.addComponent(entity, new Deleted());
-        this.entitiesToDestroy.add(entity);
+    public removeEntity(entity: Entity, now: boolean = false): void {
+        if(!now) {
+            this.addComponent(entity, new Deleted());
+            this.entitiesToDestroy.add(entity);
+            return;    
+        }
+        for (const query of this.queries) {
+            if(!query[1].has(entity)) continue;
+            query[1].onRemove(entity)
+            query[1].removeEntity(entity)
+        }
+        this.entities.delete(entity.toString());
     }
 
     /**
@@ -356,8 +365,26 @@ export default class ECS {
         }
     }
 
-    public print(): string {
-        const rows: { entity: Entity, components: { name: string, data: any }[] }[] = [];
+    public print() {
+        const rows: { entity: Entity, components: /* { name: string, data: any } */string[] }[] = [];
+        for (const entity of this.entities) {
+            let components = [];
+            for (const cr of entity[1].map) {
+                components.push(JSON.stringify({
+                    name: cr[0],
+                    data: JSON.parse(JSON.stringify(cr[1])),
+                }));
+            }
+            rows.push({
+                entity: entity[0],
+                components: components
+            });
+        }
+        console.table(JSON.parse(JSON.stringify(rows)));
+    }
+
+    public export(): string {
+        const rows: { entity: Entity, components: /* { name: string, data: any } */string[] }[] = [];
         for (const entity of this.entities) {
             let components = [];
             for (const cr of entity[1].map) {

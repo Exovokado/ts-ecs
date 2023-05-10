@@ -62,7 +62,7 @@ export default class ECS {
      * Mark entiy for further removal, to prevent system conflicts.
      * @param entity entity id.
      */
-    removeEntity(entity: Entity): void;
+    removeEntity(entity: Entity, now?: boolean): void;
     /**
      * Run after update() to remove entity from ecs memory and systems list.
      * @param entity entity id.
@@ -145,6 +145,7 @@ export default class ECS {
      */
     protected checkEntity(entity: Entity): void;
     clear(): void;
-    print(): string;
+    print(): void;
+    export(): string;
     load(save: string): void;
 }

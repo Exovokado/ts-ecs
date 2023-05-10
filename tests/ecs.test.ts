@@ -48,17 +48,15 @@ describe('testing basics', () => {
     test('save / load / print', () => {
         // A registered component may be later exported / imported.
         ecs.registerComponent(Position);
-
         // Export Save.
         const entity = ecs.addEntity();
         ecs.addComponent(entity, new Position({ x: 3, y: 2 }));
-        const save = ecs.print();
+        const save = ecs.export();
         expect(JSON.parse(save)).toStrictEqual([{"components": [{"data": {"isSync": false, "x": 3, "y": 2}, "name": "Position"}], "entity": "2"}])
-
         // Load Save.
         ecs.clear()
         ecs.load(save)
-        expect(JSON.parse(ecs.print())).toStrictEqual([{"components": [{"data": {"isSync": false, "x": 3, "y": 2}, "name": "Position"}], "entity": "3"}])
+        expect(JSON.parse(ecs.export())).toStrictEqual([{"components": [{"data": {"isSync": false, "x": 3, "y": 2}, "name": "Position"}], "entity": "3"}])
     });
     test('factory', () => {
         // Create via Factory.
@@ -72,7 +70,9 @@ describe('testing basics', () => {
         ecs.addSystem(new TestEventSystem());
         ecs.eventManager.get(TestEvent).dispatch({
             color: "red"
-        });
-        expect(ecs.getComponent("5", Style).color).toBe("red")
+        }, "Test Context");
+        expect(ecs.getComponent("5", Style).color).toBe("red");
+        ecs.eventManager.print();
+        ecs.print();
     });
 });
