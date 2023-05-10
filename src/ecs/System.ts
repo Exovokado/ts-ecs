@@ -80,7 +80,7 @@ export abstract class System<Message = any> {
     public abstract update(delta: number | boolean): void;
 
     public listen<E extends Event<any>>(event: EventClass<E>, callback: (data: E['type']) => void) {
-        this.ecs.eventManager.get(event).listen(this, callback);
+        this.ecs.eventManager.get(event).listen(this.constructor.name, callback);
     }
     
 }
