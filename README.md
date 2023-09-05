@@ -15,7 +15,7 @@ Most of the data pass through simple components.
 - Can run at each update or on message call (optionnaly providing more data) from other systems, or both.
 - Implements methods on entity adding / removal / change to allow custom mapping for further optimized queries
 
-** The plus :**
+**The plus :**
 
 Also work with Colyseus js! use ServerECS and ClientECS instances, and "SyncComponent" instead of "Component" class to create a syncable component.
 
