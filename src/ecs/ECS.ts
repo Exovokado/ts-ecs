@@ -368,7 +368,7 @@ export default class ECS {
         this.load(this.last_snap);
     }
 
-    private last_snap = "";
+    last_snap = "";
     public snap() {
         this.last_snap = this.export();
     }

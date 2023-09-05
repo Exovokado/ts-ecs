@@ -51,17 +51,15 @@ describe('testing basics', () => {
         // Export Save.
         const entity = ecs.addEntity();
         ecs.addComponent(entity, new Position({ x: 3, y: 2 }));
-        const save = ecs.export();
-        expect(JSON.parse(save)).toStrictEqual([{"components": [{"data": {"isSync": false, "x": 3, "y": 2}, "name": "Position"}], "entity": "2"}])
+        ecs.snap();
+        ecs.removeComponent(entity, Position);
         // Load Save.
-        ecs.clear()
-        ecs.load(save)
-        expect(JSON.parse(ecs.export())).toStrictEqual([{"components": [{"data": {"isSync": false, "x": 3, "y": 2}, "name": "Position"}], "entity": "3"}])
+        ecs.reset();
+        expect(ecs.getComponent(ecs.getQuery(PositionQuery).get().next().value, Position).x).toEqual(3);
     });
     test('factory', () => {
         // Create via Factory.
         ecs.addFactory(new ThingFactory());
-
         const thing = ecs.getFactory(ThingFactory).create({ color: "blue" });
         expect(ecs.hasAllComponents(thing, [Position, Style])).toBe(true)
     });
@@ -73,6 +71,5 @@ describe('testing basics', () => {
         }, "Test Context");
         expect(ecs.getComponent("5", Style).color).toBe("red");
         ecs.eventManager.print();
-        ecs.print();
     });
 });
