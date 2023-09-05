@@ -157,7 +157,7 @@ export default class ECS {
      * @param entity entity id.
      */
     protected destroyEntity(entity: Entity): void {
-        if (this.hasComponent(entity, Deleted)) this.removeComponent(entity, Deleted);
+        // if (this.hasComponent(entity, Deleted)) this.removeComponent(entity, Deleted);
         for (const query of this.queries) {
             if(!query[1].has(entity)) continue;
             query[1].onRemove(entity)
@@ -349,13 +349,9 @@ export default class ECS {
         }
     }
 
-    public clear(): void {
+    public reset(): void {
         for (const entity of this.entities) {
-            let isMap = false;
-            for (const component of entity[1].map) {
-                if (Object.keys(component[1]).includes("map")) isMap = true;
-            }
-            if (!isMap) this.destroyEntity(entity[0]);
+            this.entities.delete(entity.toString());
         }
         for (const system of this.systems) {
             system[1].onClear();
@@ -363,31 +359,26 @@ export default class ECS {
         for (const query of this.queries) {
             query[1].onClear();
         }
+        for (const system of this.systems) {
+            system[1].init();
+        }
+        for (const query of this.queries) {
+            query[1].init();
+        }
+        this.load(this.last_snap);
     }
 
-    public print() {
-        const rows: { entity: Entity, components: /* { name: string, data: any } */string[] }[] = [];
-        for (const entity of this.entities) {
-            let components = [];
-            for (const cr of entity[1].map) {
-                components.push(JSON.stringify({
-                    name: cr[0],
-                    data: JSON.parse(JSON.stringify(cr[1])),
-                }));
-            }
-            rows.push({
-                entity: entity[0],
-                components: components
-            });
-        }
-        console.table(JSON.parse(JSON.stringify(rows)));
+    private last_snap = "";
+    public snap() {
+        this.last_snap = this.export();
     }
 
     public export(): string {
-        const rows: { entity: Entity, components: /* { name: string, data: any } */string[] }[] = [];
+        const rows: { entity: Entity, components: { name: string, data: any }[] }[] = [];
         for (const entity of this.entities) {
             let components = [];
             for (const cr of entity[1].map) {
+                if(!this.components.has(cr[1].constructor.name)) continue;
                 components.push({
                     name: cr[0],
                     data: JSON.parse(JSON.stringify(cr[1])),
