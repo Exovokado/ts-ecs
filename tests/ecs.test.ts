@@ -51,10 +51,11 @@ describe('testing basics', () => {
         // Export Save.
         const entity = ecs.addEntity();
         ecs.addComponent(entity, new Position({ x: 3, y: 2 }));
-        ecs.snap();
+        const save = ecs.export();
         ecs.removeComponent(entity, Position);
         // Load Save.
         ecs.reset();
+        ecs.load(save);
         expect(ecs.getComponent(ecs.getQuery(PositionQuery).get().next().value, Position).x).toEqual(3);
     });
     test('factory', () => {

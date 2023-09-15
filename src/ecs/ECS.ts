@@ -68,7 +68,7 @@ export default class ECS {
     }
 
     public getQueryIfExists<Q extends Query>(queryClass: QueryClass<Q>): Q | null {
-        if(!this.queries.has(queryClass.name))
+        if (!this.queries.has(queryClass.name))
             return null;
         return this.queries.get(queryClass.name) as Q;
     }
@@ -139,13 +139,13 @@ export default class ECS {
      * @param entity entity id.
      */
     public removeEntity(entity: Entity, now: boolean = false): void {
-        if(!now) {
+        if (!now) {
             this.addComponent(entity, new Deleted());
             this.entitiesToDestroy.add(entity);
-            return;    
+            return;
         }
         for (const query of this.queries) {
-            if(!query[1].has(entity)) continue;
+            if (!query[1].has(entity)) continue;
             query[1].onRemove(entity)
             query[1].removeEntity(entity)
         }
@@ -159,7 +159,7 @@ export default class ECS {
     protected destroyEntity(entity: Entity): void {
         // if (this.hasComponent(entity, Deleted)) this.removeComponent(entity, Deleted);
         for (const query of this.queries) {
-            if(!query[1].has(entity)) continue;
+            if (!query[1].has(entity)) continue;
             query[1].onRemove(entity)
             query[1].removeEntity(entity)
         }
@@ -350,7 +350,14 @@ export default class ECS {
     }
 
     public reset(): void {
-        for (const entity of this.entities) {
+        if (this.debug) this.logger.debug("ECS Reset.");
+        for (const row of this.entities) {
+            const entity = row[0];
+            for (const query of this.queries) {
+                if (!query[1].has(entity)) continue;
+                query[1].removeEntity(entity)
+            }
+            this.entitiesToDestroy.delete(entity);
             this.entities.delete(entity.toString());
         }
         for (const system of this.systems) {
@@ -365,40 +372,46 @@ export default class ECS {
         for (const query of this.queries) {
             query[1].init();
         }
-        this.load(this.last_snap);
-    }
 
-    last_snap = "";
-    public snap() {
-        this.last_snap = this.export();
     }
 
     public export(): string {
+        if (this.debug) {
+            this.logger.debug("Exporting game with following registered components: ");
+            this.logger.debug(this.components.keys());
+        }
         const rows: { entity: Entity, components: { name: string, data: any }[] }[] = [];
         for (const entity of this.entities) {
             let components = [];
             for (const cr of entity[1].map) {
-                if(!this.components.has(cr[1].constructor.name)) continue;
+                if (!this.components.has(cr[1].constructor.name)) continue;
                 components.push({
                     name: cr[0],
                     data: JSON.parse(JSON.stringify(cr[1])),
                 });
             }
-            rows.push({
-                entity: entity[0],
-                components: components
-            });
+            if (components.length)
+                rows.push({
+                    entity: entity[0],
+                    components: components
+                });
         }
         return JSON.stringify(rows);
     }
 
     public load(save: string): void {
+        const start = performance.now();
+        if (this.debug) {
+            this.logger.debug("Loading...");
+        }
         for (const entityRow of JSON.parse(save)) {
             const entity = this.addEntity();
             for (const ComponentRow of entityRow.components) {
+                if (!this.components.has(ComponentRow.name)) throw new Error(ComponentRow.name + " Component in save isn't registered.");
                 const componentClass = this.components.get(ComponentRow.name);
                 this.addComponent(entity, new componentClass(ComponentRow.data))
             }
         }
+        if (this.debug) this.logger.debug("Done, " + ((performance.now() - start) / 1000).toString().slice(0, 5) + " S.");
     }
 }
