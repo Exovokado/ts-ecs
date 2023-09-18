@@ -64,7 +64,7 @@ export abstract class System<Message = any> {
     }
 
     public addMessage(message: Message = null): void {
-        if(this.debug) this.ecs.logger.debug(message)
+        if(this.debug) this.ecs.logger.debug("new message for " + this.constructor.name + " Sytem: " + message)
         this.messages.push(message ? message : "true");
     };
 

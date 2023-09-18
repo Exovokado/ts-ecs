@@ -372,13 +372,12 @@ export default class ECS {
         for (const query of this.queries) {
             query[1].init();
         }
-
     }
 
     public export(): string {
         if (this.debug) {
             this.logger.debug("Exporting game with following registered components: ");
-            this.logger.debug(this.components.keys());
+            this.logger.debug([...this.components.keys()]);
         }
         const rows: { entity: Entity, components: { name: string, data: any }[] }[] = [];
         for (const entity of this.entities) {
